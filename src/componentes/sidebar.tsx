@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { LayoutDashboard, Users, Bike, PiggyBank, Wrench, Package, Menu, LogOut } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/componentes/ui/sheet";
-import { createClient } from "@/utils/supabase/clients";
 import { useState } from "react";
 
 const sections = [
@@ -63,11 +62,9 @@ const sections = [
 export default function Sidebar() {
     const pathname = usePathname();
     const router = useRouter();
-    const supabase = createClient();
     const [isOpen, setIsOpen] = useState(false);
 
     const handleLogout = async () => {
-        await supabase.auth.signOut();
         router.push('/login');
         setIsOpen(false);
     };

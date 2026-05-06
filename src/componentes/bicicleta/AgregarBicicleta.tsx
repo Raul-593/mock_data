@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { Input } from "@/componentes/ui/input"
 import { Label } from "@/componentes/ui/label"
 import { FormDialog } from "@/componentes/FormDialog"
-import { createClient } from "@/utils/supabase/clients"
 import { toast } from "sonner"
 
 type Props = {
@@ -14,7 +13,6 @@ type Props = {
 
 export function AgregarBicicleta({ onBicicletaAgregado, trigger }: Props) {
     // Base de Datos y Modal
-    const supabase = createClient()
     const [isOpen, setIsOpen] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -26,20 +24,6 @@ export function AgregarBicicleta({ onBicicletaAgregado, trigger }: Props) {
     const [customerId, setCustomerId] = useState<string | null>(null)
     const [clientes, setClientes] = useState<{ id: string, name: string }[]>([])
 
-    // Cargar Clientes
-    useEffect(() => {
-        if (isOpen && clientes.length === 0) {
-            const fetchClientes = async () => {
-                const { data } = await supabase
-                    .from("customers")
-                    .select("id, name, created_at")
-                    .order("created_at", { ascending: false })
-                if (data) setClientes(data)
-            }
-            fetchClientes()
-        }
-    }, [isOpen, supabase, clientes.length])
-
     function reset() { setBrand(""); setModel(""); setSerialNumber(""); setObservacion(""); setCustomerId(null) }
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -48,28 +32,6 @@ export function AgregarBicicleta({ onBicicletaAgregado, trigger }: Props) {
             return
         }
         setIsSubmitting(true)
-
-        const { data, error } = await supabase
-            .from("bicycles")
-            .insert([{
-                brand: brand.trim(),
-                model: model.trim(),
-                serial_number: serialNumber.trim() || null,
-                observacion: observacion.trim() || null,
-                customer_id: customerId
-            }])
-            .select("id, brand, model, serial_number, observacion, customer_id")
-            .single()
-
-        if (error) {
-            toast.error('Error al crear bicicleta'); console.error(error)
-        } else if (data) {
-            onBicicletaAgregado(data);
-            toast.success("Bicicleta creada con exito");
-            setIsOpen(false);
-            reset()
-        }
-        setIsSubmitting(false)
     }
 
     return (

@@ -1,5 +1,5 @@
-import { createClient } from "@/utils/supabase/server"
-import {BicicletasClient} from "./BicicletasClient"
+import { mockBicicletas } from "@/lib/mockData"
+import { BicicletasClient } from "./BicicletasClient"
 
 type Bicicleta = {
   id: string
@@ -10,23 +10,6 @@ type Bicicleta = {
   customers: { name: string } | null
 }
 
-export default async function Bicicletas() {
-  const supabase = await createClient()
-
-  const { data: bicicletas, error } = await supabase
-    .from("bicycles")
-    .select(`
-      id,
-      brand,
-      model,
-      serial_number,
-      observacion,
-      created_at,
-      customers ( name )
-    `)
-    .order("created_at", { ascending: false })
-
-  if (error) console.error("Error al obtener bicicletas:", error)
-
-  return <BicicletasClient bicicletas={(bicicletas as unknown as Bicicleta[]) ?? []} />
+export default function Bicicletas() {
+  return <BicicletasClient bicicletas={mockBicicletas as Bicicleta[]} />
 }

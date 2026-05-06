@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { Input } from "@/componentes/ui/input"
 import { Label } from "@/componentes/ui/label"
 import { FormDialog } from "@/componentes/FormDialog"
-import { createClient } from "@/utils/supabase/clients"
 import { toast } from "sonner"
 import { Button } from "@/componentes/ui/button"
 
@@ -15,7 +14,6 @@ type Props = {
 }
 
 export function EditarBicicletaDialog({ bicicleta, onBicicletaActualizada, trigger}: Props) {
-    const supabase = createClient()
     const [isOpen, setIsOpen] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
     
@@ -47,28 +45,6 @@ export function EditarBicicletaDialog({ bicicleta, onBicicletaActualizada, trigg
             return
         }
         setIsSubmitting(true)
-
-        const {data, error } = await supabase
-        .from("bicycles")
-        .update({
-            brand: brand.trim(),
-            model: model.trim(),
-            serial_number: serial_number.trim(),
-            observacion: observacion.trim()
-        })
-        .eq("id", bicicleta.id)
-        .select("id, brand, model, serial_number, observacion, customers (name)")
-        .single()
-
-        if(error) {
-            toast.error("Error al actualizar el cliente")
-            console.error(error)
-        } else if (data) {
-            onBicicletaActualizada(data);
-            toast.success("Bicicleta Actualizada con Éxito!")
-            setIsOpen(false);
-        }
-        setIsSubmitting(false)
     }
 
     const defaultTrigger = trigger || <Button variant="outline" size="sm"> Editar </Button>
@@ -79,7 +55,7 @@ export function EditarBicicletaDialog({ bicicleta, onBicicletaActualizada, trigg
             description="Modifica los datos de la Bicicleta"
             trigger={defaultTrigger}
             isOpen={isOpen}
-            onOpenChange={ (open) => { setIsOpen(open); if (!open) reset() }}
+            onOpenChange={setIsOpen}
             onSubmit={handleSubmit}
             isSubmitting={isSubmitting}
             submitLabel="Actualizar Bicicleta"

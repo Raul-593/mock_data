@@ -7,10 +7,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { AgregarIngreso } from "@/componentes/finanzas/AgregarIngreso"
 import { AgregarGasto } from "@/componentes/finanzas/AgregarGasto"
 import { Toaster } from "sonner"
+import DashboardBarChart from "@/componentes/finanzas/DashboardBarChart"
 
 export function FinanzasClient({ sales: initialSales, purchases: initialPurchases }: { sales: any[], purchases: any[] }) {
     const router = useRouter()
-    
     const [sales, setSales] = useState(initialSales || [])
     const [purchases, setPurchases] = useState(initialPurchases || [])
 
@@ -90,17 +90,55 @@ export function FinanzasClient({ sales: initialSales, purchases: initialPurchase
                             </div>
                         </CardHeader>
                         <CardContent>
-                            GRAFICO DE CON LA INFORMACION DE INGRESOS Y GASTOS QUE ESTA EN LA PAGINA DE FINANZAS
+                            <DashboardBarChart />
                         </CardContent>
                     </Card>
-                    <Card className="md:col-span-1 flex flex-col justify-center">
-                        <CardHeader>
-                            <div className="space-y-1">
-                                <CardTitle> Diferentes Gastos</CardTitle>
-                            </div>
+                    <Card className="md:col-span-1 flex flex-col">
+                        <CardHeader className="pb-3">
+                            <CardTitle className="text-base font-semibold">Últimos Movimientos</CardTitle>
+                            <CardDescription>5 movimientos más recientes</CardDescription>
                         </CardHeader>
-                        <CardContent>
-                            GRAFICO PIE CON LA INFORMACION DE GASTOS QUE ESTA EN LA PAGINA DE FINANZAS
+                        <CardContent className="px-4 pb-4">
+                            <ul className="flex flex-col gap-3">
+                                {[
+                                    ...sales.map((v: any) => ({
+                                        id: v.id,
+                                        tipo: "venta" as const,
+                                        label: v.sales_type,
+                                        fecha: v.sales_date,
+                                        monto: v.total,
+                                    })),
+                                    ...purchases.map((p: any) => ({
+                                        id: p.id,
+                                        tipo: "compra" as const,
+                                        label: p.description,
+                                        fecha: p.purchase_date,
+                                        monto: p.total,
+                                    })),
+                                ]
+                                    .sort((a, b) => b.fecha.localeCompare(a.fecha))
+                                    .slice(0, 5)
+                                    .map((mov) => (
+                                        <li key={mov.id} className="flex items-center justify-between gap-2 text-sm">
+                                            <div className="flex items-center gap-2 min-w-0">
+                                                <span className={`shrink-0 text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded ${
+                                                    mov.tipo === "venta"
+                                                        ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400"
+                                                        : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400"
+                                                }`}>
+                                                    {mov.tipo === "venta" ? "Venta" : "Compra"}
+                                                </span>
+                                                <span className="truncate text-foreground capitalize">{mov.label}</span>
+                                            </div>
+                                            <div className="flex flex-col items-end shrink-0">
+                                                <span className={`font-semibold ${mov.tipo === "venta" ? "text-green-500" : "text-red-500"}`}>
+                                                    {mov.tipo === "venta" ? "+" : "-"}${mov.monto.toFixed(2)}
+                                                </span>
+                                                <span className="text-[11px] text-muted-foreground">{mov.fecha}</span>
+                                            </div>
+                                        </li>
+                                    ))}
+                            </ul>
                         </CardContent>
                     </Card>
                 </div>

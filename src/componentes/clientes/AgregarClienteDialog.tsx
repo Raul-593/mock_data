@@ -4,7 +4,6 @@ import { useState } from "react"
 import { Input } from "@/componentes/ui/input"
 import { Label } from "@/componentes/ui/label"
 import { FormDialog } from "@/componentes/FormDialog"
-import { createClient } from "@/utils/supabase/clients"
 import { toast } from "sonner"
 
 type Props = {
@@ -13,8 +12,6 @@ type Props = {
 }
 
 export function AgregarClienteDialog({ onClienteAgregado, trigger }: Props) {
-    const supabase = createClient()
-    
     const [isOpen, setIsOpen] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [name, setName] = useState("")
@@ -30,25 +27,6 @@ export function AgregarClienteDialog({ onClienteAgregado, trigger }: Props) {
             return 
         }
         setIsSubmitting(true)
-
-        const { data, error } = await supabase
-        .from("customers")
-        .insert([{ 
-            name: name.trim(), 
-            phone: phone.trim() || null, 
-            address: address.trim() || null 
-        }])
-        .select("id, name, phone, address")
-        .single()
-
-        if (error) { toast.error("Error al crear el cliente"); console.error(error)}
-        else if (data)  { 
-            onClienteAgregado(data); 
-            toast.success("Cliente creado con Exito"); 
-            setIsOpen(false); 
-            reset()
-        }
-        setIsSubmitting(false)
     }
 
     return (
@@ -57,7 +35,7 @@ export function AgregarClienteDialog({ onClienteAgregado, trigger }: Props) {
             description="Ingresa los datos del nuevo cliente."
             trigger={trigger}
             isOpen={isOpen}
-            onOpenChange={ (open) => { setIsOpen(open); if (!open) reset() }}
+            onOpenChange={setIsOpen}
             onSubmit={handleSubmit}
             isSubmitting={isSubmitting}
             submitLabel="Guardar Cliente"

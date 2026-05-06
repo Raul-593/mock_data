@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { Input } from "@/componentes/ui/input"
 import { Label } from "@/componentes/ui/label"
 import { FormDialog } from "@/componentes/FormDialog"
-import { createClient } from "@/utils/supabase/clients"
 import { toast } from "sonner"
 import { Button } from "@/componentes/ui/button"
 
@@ -15,7 +14,6 @@ type Props = {
 }
 
 export function EditarMantenimientoDialog({ mantenimiento, onMantenimientoActualizado, trigger}: Props) {
-    const supabase = createClient()
     const [isOpen, setIsOpen] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -63,30 +61,6 @@ export function EditarMantenimientoDialog({ mantenimiento, onMantenimientoActual
         }
         setIsSubmitting(true)
 
-        const { data, error } = await supabase
-        .from("maintenance_records")
-        .update({
-            service_date: serviceDate.trim(),
-            delivery_date: deliveryDate.trim(),
-            description: description.trim(),
-            observation: observacion.trim(),
-            cost: cost,
-            status: estado,
-            bicycle_id: bicycle_id
-        })
-        .eq("id", mantenimiento.id)
-        .select("id, service_date, delivery_date, description, observation, cost, status, bicycle_id")
-        .single()
-
-        if(error) {
-            toast.error("Error al actualizar el cliente")
-            console.error(error)
-        } else if (data) {
-            onMantenimientoActualizado(data);
-            toast.success("Bicicleta Actualizada con Éxito!")
-            setIsOpen(false);
-        }
-        setIsSubmitting(false)
     }
 
     const defaultTrigger = trigger || <Button variant="outline" size="sm"> Editar </Button>

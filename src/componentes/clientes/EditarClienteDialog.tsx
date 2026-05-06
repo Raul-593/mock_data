@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { Input } from "@/componentes/ui/input"
 import { Label } from "@/componentes/ui/label"
 import { FormDialog } from "@/componentes/FormDialog"
-import { createClient } from "@/utils/supabase/clients"
 import { toast } from "sonner"
 import { Button } from "@/componentes/ui/button"
 
@@ -15,8 +14,7 @@ type Props = {
 }
 
 export function EditarClienteDialog({ cliente, onClienteActualizado, trigger }: Props) {
-    const supabase = createClient()
-    
+ 
     const [isOpen, setIsOpen] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [name, setName] = useState(cliente.name || "")
@@ -45,27 +43,6 @@ export function EditarClienteDialog({ cliente, onClienteActualizado, trigger }: 
             return 
         }
         setIsSubmitting(true)
-
-        const { data, error } = await supabase
-        .from("customers")
-        .update({ 
-            name: name.trim(), 
-            phone: phone.trim() || null, 
-            address: address.trim() || null 
-        })
-        .eq('id', cliente.id)
-        .select("id, name, phone, address")
-        .single()
-
-        if (error) { 
-            toast.error("Error al actualizar el cliente")
-            console.error(error)
-        } else if (data)  { 
-            onClienteActualizado(data); 
-            toast.success("Cliente actualizado con éxito"); 
-            setIsOpen(false); 
-        }
-        setIsSubmitting(false)
     }
 
     const defaultTrigger = trigger || <Button variant="outline" size="sm"> Editar </Button>
@@ -76,7 +53,7 @@ export function EditarClienteDialog({ cliente, onClienteActualizado, trigger }: 
             description="Modifica los datos del cliente."
             trigger={defaultTrigger}
             isOpen={isOpen}
-            onOpenChange={ (open) => { setIsOpen(open); if (!open) reset() }}
+            onOpenChange={setIsOpen}
             onSubmit={handleSubmit}
             isSubmitting={isSubmitting}
             submitLabel="Actualizar Cliente"

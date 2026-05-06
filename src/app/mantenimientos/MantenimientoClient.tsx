@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
-import { createClient } from "@/utils/supabase/clients"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/componentes/ui/cards"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/componentes/ui/table"
 import { Toaster } from "sonner"
@@ -34,8 +33,6 @@ export function MantenimientoClient({ mantenimientos: initial }: { mantenimiento
     useEffect(() => {
         setMantenimientos(initial)
     }, [initial])
-    const supabase = createClient()
-
     // Filtros por estado
     const filtradas = useMemo(() =>
         filtro === "Todas"
@@ -44,28 +41,12 @@ export function MantenimientoClient({ mantenimientos: initial }: { mantenimiento
         [mantenimiento, filtro]
     )
 
-    // Función para cambiar el estado de un mantenimiento
-    async function cambiarEstado(id: string, nuevoEstado: string) {
+    // Función para cambiar el estado — modo demo: solo actualiza la UI
+    function cambiarEstado(id: string, nuevoEstado: string) {
         setLoadingId(id)
-
-        // Actualizar desde la UI
         setMantenimientos(prev =>
             prev.map(m => m.id === id ? { ...m, status: nuevoEstado } : m)
         )
-
-        // Actualizar desde la base de datos
-        const { error } = await supabase
-            .from('maintenance_records')
-            .update({ status: nuevoEstado })
-            .eq('id', id)
-
-        // Si hay error, revertir el cambio
-        if (error) {
-            console.error('Error al actualizar el estado:', error)
-            setMantenimientos(initial)
-        }
-
-        // Limpiar el loading
         setLoadingId(null)
     }
 

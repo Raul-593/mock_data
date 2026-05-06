@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { Input } from "@/componentes/ui/input"
 import { Label } from "@/componentes/ui/label"
 import { FormDialog } from "@/componentes/FormDialog"
-import { createClient } from "@/utils/supabase/clients"
 import { toast } from "sonner"
 import { Button } from "@/componentes/ui/button"
 
@@ -14,7 +13,6 @@ type Props = {
 }
 
 export function AgregarGasto({ onGastoAgregado, trigger }: Props) {
-    const supabase = createClient()
     const [isOpen, setIsOpen] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -27,70 +25,16 @@ export function AgregarGasto({ onGastoAgregado, trigger }: Props) {
     const [status, setStatus] = useState("completado")
     const [observacion, setObservacion] = useState("")
     
-    // Proveedor
-    const [suppliers, setSuppliers] = useState<{ id: string, name: string }[]>([])
-    const [supplierId, setSupplierId] = useState<string | null>(null)
-
-    // Cargar Proveedores
-    useEffect(() => {
-        if (isOpen && suppliers.length === 0) {
-            const fetchSuppliers = async () => {
-                const { data } = await supabase
-                    .from("suppliers")
-                    .select("id, name")
-                    .order("name", { ascending: true })
-                if (data) setSuppliers(data)
-            }
-            fetchSuppliers()
-        }
-    }, [isOpen, supabase, suppliers.length])
-
-    function reset() { 
-        setPurchaseDate("")
-        setSupplierId(null)
-        setDescription("")
-        setSubTotal("")
-        setTotal("")
-        setPaymentMethod("transferencia")
-        setStatus("completado")
-        setObservacion("")
-    }
-
+    
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         
-        if (!purchaseDate || !subTotal || !total || !paymentMethod || !supplierId) {
+        if (!purchaseDate || !subTotal || !total || !paymentMethod) {
             toast.error("Existen campos obligatorios vacíos")
             return
         }
 
         setIsSubmitting(true)
-
-        const { data, error } = await supabase
-            .from("purchases")
-            .insert([{
-                purchase_date: purchaseDate, // en compras es mandatorio
-                supplier_id: supplierId,
-                description: description.trim() || null,
-                sub_total: parseFloat(subTotal),
-                total: parseFloat(total),
-                payment_method: paymentMethod,
-                status: status,
-                observacion: observacion.trim() || null,
-            }])
-            .select()
-            .single()
-
-        if (error) {
-            toast.error("Error al registrar el gasto")
-            console.error(error)
-        } else if (data) {
-            onGastoAgregado(data)
-            toast.success("Gasto registrado correctamente")
-            reset()
-            setIsOpen(false)
-        }
-        setIsSubmitting(false)
     }
 
     const defaultTrigger = trigger || (
@@ -105,7 +49,7 @@ export function AgregarGasto({ onGastoAgregado, trigger }: Props) {
             description="Ingresa los datos de la compra del taller"
             trigger={defaultTrigger}
             isOpen={isOpen}
-            onOpenChange={(open) => { setIsOpen(open); if (!open) reset() }}
+            onOpenChange={setIsOpen}
             onSubmit={handleSubmit}
             isSubmitting={isSubmitting}
             submitLabel="Guardar Gasto"
@@ -120,16 +64,9 @@ export function AgregarGasto({ onGastoAgregado, trigger }: Props) {
                 <div className="grid gap-2">
                     <Label>Proveedor *</Label>
                     <select 
-                        value={supplierId || ""}
-                        onChange={e => setSupplierId(e.target.value)}
                         className="w-full appearance-none bg-background border border-border rounded-lg px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer"
                     >
                         <option value="">Seleccionar Proveedor</option>
-                        {suppliers.map(s => (
-                            <option key={s.id} value={s.id}>
-                                {s.name}
-                            </option>
-                        ))}
                     </select>
                 </div>
 

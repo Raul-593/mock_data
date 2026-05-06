@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { Input } from "@/componentes/ui/input"
 import { Label } from "@/componentes/ui/label"
 import { FormDialog } from "@/componentes/FormDialog"
-import { createClient } from "@/utils/supabase/clients"
 import { toast } from "sonner"
 
 type Props = {
@@ -14,7 +13,6 @@ type Props = {
 
 export function AgregarMantenimiento({ onMantenimientoAgregado, trigger}: Props) {
     //Base de datos y  Modal
-    const supabase = createClient()
     const [isOpen, setIsOpen] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -30,34 +28,6 @@ export function AgregarMantenimiento({ onMantenimientoAgregado, trigger}: Props)
     const [cost, setCost] = useState("")
     const [estado, setEstado] = useState("recibido")
 
-    // Cargar Bicicletas
-    useEffect(() => {
-        if (isOpen && bicicletas.length === 0) {
-            const fetchBicicletas = async () => {
-                const { data } = await supabase
-                    .from("bicycles")
-                    .select("id, brand, model, customer_id")
-                    .order("created_at", { ascending: false })
-                if (data) setBicicletas(data)
-            }
-            fetchBicicletas()
-        }
-    }, [isOpen, supabase, bicicletas.length])
-
-    // Cargar Clientes
-    useEffect(() => {
-        if (isOpen && cliente.length === 0) {
-            const fetchClientes = async () => {
-                const { data } = await supabase
-                    .from("customers")
-                    .select("id, name, created_at")
-                    .order("created_at", { ascending: false })
-                if (data) setCliente(data)
-            }
-            fetchClientes()
-        }
-    }, [isOpen, supabase, cliente.length])
-
     function reset() { setBicycle_id(null); setClienteId(null); setServiceDate(""); setDeliveryDate(""); setDescription(""); setObservacion(""); setCost(""); setEstado("recibido")}
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -66,33 +36,7 @@ export function AgregarMantenimiento({ onMantenimientoAgregado, trigger}: Props)
             return
         }        
         setIsSubmitting(true)
-
-        const { data, error } = await supabase
-            .from("maintenance_records")
-            .insert([{
-                service_date: serviceDate.trim(),
-                delivery_date: deliveryDate.trim(),
-                description: description.trim(),
-                observation: observacion.trim(),
-                cost: cost,
-                status: estado,
-                bicycle_id: bicycle_id
-            }])
-            .select()
-            .single()
-
-        if (error) {
-            toast.error("Error al guardar Mantenimietno"); console.error(error)
-        } else if (data) {
-            onMantenimientoAgregado(data);
-            toast.success("Mantenimiento guardado correctamente");
-            setIsOpen(false);
-            reset();
-        }
-        setIsSubmitting(false)
     }
-
-    const bicicletasFiltradas = clienteId ? bicicletas.filter(b => b.customer_id === clienteId) : []
 
     return (
         <FormDialog
@@ -135,13 +79,6 @@ export function AgregarMantenimiento({ onMantenimientoAgregado, trigger}: Props)
                         disabled={!clienteId}
                     >
                         <option value="">Seleccionar Bicicleta</option>
-                        <optgroup>
-                            {bicicletasFiltradas.map(b => (
-                                <option key={b.id} value={b.id}>
-                                    {b.brand} {b.model}
-                                </option>
-                            ))}
-                        </optgroup>
                     </select>
                 </div>
                 <div className="grip gap-2">

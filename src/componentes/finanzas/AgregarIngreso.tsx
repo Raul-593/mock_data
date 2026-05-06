@@ -4,7 +4,6 @@ import { useState } from "react"
 import { Input } from "@/componentes/ui/input"
 import { Label } from "@/componentes/ui/label"
 import { FormDialog } from "@/componentes/FormDialog"
-import { createClient } from "@/utils/supabase/clients"
 import { toast } from "sonner"
 import { Button } from "@/componentes/ui/button"
 
@@ -14,7 +13,6 @@ type Props = {
 }
 
 export function AgregarIngreso({ onIngresoAgregado, trigger }: Props) {
-    const supabase = createClient()
     const [isOpen, setIsOpen] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -49,31 +47,6 @@ export function AgregarIngreso({ onIngresoAgregado, trigger }: Props) {
 
         setIsSubmitting(true)
 
-        const { data, error } = await supabase
-            .from("sales")
-            .insert([{
-                sales_date: salesDate || null,
-                sales_type: salesType,
-                sub_total: parseFloat(subTotal),
-                discount: discount ? parseFloat(discount) : 0,
-                total: parseFloat(total),
-                payment_method: paymentMethod,
-                status: status,
-                observacion: observacion.trim() || null,
-            }])
-            .select()
-            .single()
-
-        if (error) {
-            toast.error("Error al registrar el ingreso")
-            console.error(error)
-        } else if (data) {
-            onIngresoAgregado(data)
-            toast.success("Ingreso registrado correctamente")
-            reset()
-            setIsOpen(false)
-        }
-        setIsSubmitting(false)
     }
 
     const defaultTrigger = trigger || (

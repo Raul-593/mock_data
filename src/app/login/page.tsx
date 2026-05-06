@@ -24,14 +24,13 @@ export default function LoginPage() {
                                     name="email"
                                     type="email"
                                     placeholder="m@example.com"
-                                    required
                                 />
                             </div>
                             <div className="grid gap-2">
                                 <div className="flex items-center">
                                     <Label htmlFor="password">Contraseña</Label>
                                 </div>
-                                <Input id="password" name="password" type="password" required />
+                                <Input id="password" name="password" type="password" />
                             </div>
                             <Button formAction={login} className="w-full">
                                 Iniciar Sesión
